@@ -20,9 +20,13 @@
             <com.google.android.material.textfield.TextInputEditText
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:gravity="top"
                 android:hint="@string/detail_inputbox"
-                android:inputType="textLongMessage|textImeMultiLine"
+                android:inputType="textMultiLine"
+                android:maxLines="18"
                 android:saveEnabled="true"
+                android:scrollbars="vertical"
+                android:textColorHint="#0097A7"
                 android:textSize="30sp" />
         </com.google.android.material.textfield.TextInputLayout>
 
