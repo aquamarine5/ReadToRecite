@@ -5,7 +5,6 @@ import static androidx.camera.video.VideoRecordEvent.Finalize.*;
 import android.Manifest;
 import android.content.ContentValues;
 import android.content.pm.PackageManager;
-import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.util.Log;
@@ -26,7 +25,6 @@ import androidx.camera.video.Quality;
 import androidx.camera.video.QualitySelector;
 import androidx.camera.video.Recorder;
 import androidx.camera.video.Recording;
-import androidx.camera.video.RecordingStats;
 import androidx.camera.video.VideoCapture;
 import androidx.camera.video.VideoRecordEvent;
 import androidx.camera.view.PreviewView;
@@ -44,7 +42,7 @@ public class MainActivity extends AppCompatActivity {
     public ProcessCameraProvider cameraProvider;
     public Recorder recorder;
     public Recording recording=null;
-    public VideoCapture videoCapture;
+    public VideoCapture<Recorder> videoCapture;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,14 +57,15 @@ public class MainActivity extends AppCompatActivity {
                 ContentValues values = new ContentValues();
                 values.put(MediaStore.Video.Media.DISPLAY_NAME,
                         "ReadToRecite-" + new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ENGLISH).format(new Date()) + ".mp4");
-                MediaStoreOutputOptions options = new MediaStoreOutputOptions.Builder(this.getContentResolver(), MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
+                MediaStoreOutputOptions options = new MediaStoreOutputOptions.Builder(
+                        this.getContentResolver(), MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
                         .setContentValues(values)
                         .build();
                 if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
                     ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 114514);
                 }
 
-                recording = recorder.prepareRecording(this, options)
+                recording = videoCapture.getOutput().prepareRecording(this, options)
                         .withAudioEnabled()
                         .start(ContextCompat.getMainExecutor(this), videoRecordEvent -> {
                             if(videoRecordEvent instanceof VideoRecordEvent.Finalize){
@@ -77,6 +76,7 @@ public class MainActivity extends AppCompatActivity {
                                     Log.e("Debug",((FileOutputOptions) outputOptions).getFile().getAbsolutePath());
                             }
                         });
+
                 fab.setImageResource(android.R.drawable.ic_menu_save);
 
             } else { // Stop record
@@ -103,7 +103,7 @@ public class MainActivity extends AppCompatActivity {
                     .setQualitySelector(qs)
                     .build();
             videoCapture=VideoCapture.withOutput(recorder);
-            Camera camera=cameraProvider.bindToLifecycle(this,cameraSelector,preview);
+            Camera camera=cameraProvider.bindToLifecycle(this,cameraSelector,videoCapture,preview);
 
         }
         catch(ExecutionException | InterruptedException e){
