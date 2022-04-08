@@ -1,8 +1,7 @@
 package com.aquaapps.readtorecite;
 
-import static androidx.camera.video.VideoRecordEvent.Finalize.*;
-
 import android.Manifest;
+import android.content.ClipData;
 import android.content.ContentValues;
 import android.content.pm.PackageManager;
 import android.os.Bundle;
@@ -10,6 +9,7 @@ import android.provider.MediaStore;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
@@ -39,10 +39,13 @@ import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 public class MainActivity extends AppCompatActivity {
+    public PreviewView previewView;
     public ProcessCameraProvider cameraProvider;
     public Recorder recorder;
     public Recording recording=null;
     public VideoCapture<Recorder> videoCapture;
+
+    public boolean isShowingPreview=true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -89,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
         try{
             cameraProvider=ProcessCameraProvider.getInstance(this).get();
             Preview preview=new Preview.Builder().build();
-            PreviewView previewView=findViewById(R.id.previewView);
+            previewView=findViewById(R.id.previewView);
             CameraSelector cameraSelector=new CameraSelector.Builder()
                     .requireLensFacing(CameraSelector.LENS_FACING_FRONT)
                     .build();
@@ -111,6 +114,7 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
@@ -126,7 +130,15 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == R.id.action_preview) {
+            if(isShowingPreview){
+                previewView.setVisibility(View.INVISIBLE);
+                item.setTitle(R.string.action_preview_enabled);
+            } else{
+                previewView.setVisibility(View.VISIBLE);
+                item.setTitle(R.string.action_preview_disabled);
+            }
+            isShowingPreview=!isShowingPreview;
             return true;
         }
 

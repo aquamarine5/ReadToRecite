@@ -13,10 +13,26 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:hint="@string/detail_inputbox"
+                android:inputType="textLongMessage|textImeMultiLine"
+                android:saveEnabled="true"
+                android:textSize="30sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
         <androidx.camera.view.PreviewView
             android:id="@+id/previewView"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"/>
+            android:layout_height="match_parent"
+            android:visibility="visible">
+
+        </androidx.camera.view.PreviewView>
 
     </FrameLayout>
 

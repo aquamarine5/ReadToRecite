@@ -1,5 +1,7 @@
 <resources>
     <string name="app_name">ReadToRecite</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_preview_disabled">关闭预览</string>
+    <string name="action_preview_enabled">显示预览</string>
     <string name="description_record">录制</string>
+    <string name="detail_inputbox">在此输入背诵内容</string>
 </resources>
