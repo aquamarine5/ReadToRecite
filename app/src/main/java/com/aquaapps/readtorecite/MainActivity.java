@@ -1,51 +1,26 @@
 package com.aquaapps.readtorecite;
 
-import android.Manifest;
-import android.content.ClipData;
-import android.content.ContentValues;
-import android.content.pm.PackageManager;
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.provider.MediaStore;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
-import androidx.camera.core.Camera;
-import androidx.camera.core.CameraSelector;
-import androidx.camera.core.Preview;
-import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.camera.video.FallbackStrategy;
-import androidx.camera.video.FileOutputOptions;
-import androidx.camera.video.MediaStoreOutputOptions;
-import androidx.camera.video.OutputOptions;
-import androidx.camera.video.Quality;
-import androidx.camera.video.QualitySelector;
-import androidx.camera.video.Recorder;
-import androidx.camera.video.Recording;
-import androidx.camera.video.VideoCapture;
+import androidx.camera.video.OutputResults;
 import androidx.camera.video.VideoRecordEvent;
-import androidx.camera.view.PreviewView;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.Locale;
-import java.util.concurrent.ExecutionException;
+import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
-    public PreviewView previewView;
-    public ProcessCameraProvider cameraProvider;
-    public Recorder recorder;
-    public Recording recording=null;
-    public VideoCapture<Recorder> videoCapture;
+    public CameraController cameraController;
 
-    public boolean isShowingPreview=true;
+    public boolean isShowingPreview = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,63 +30,27 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         FloatingActionButton fab = findViewById(R.id.fab);
         fab.setOnClickListener(view -> {
-            if(recording==null) {
-                // Start record
-                ContentValues values = new ContentValues();
-                values.put(MediaStore.Video.Media.DISPLAY_NAME,
-                        "ReadToRecite-" + new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ENGLISH).format(new Date()) + ".mp4");
-                MediaStoreOutputOptions options = new MediaStoreOutputOptions.Builder(
-                        this.getContentResolver(), MediaStore.Video.Media.EXTERNAL_CONTENT_URI)
-                        .setContentValues(values)
-                        .build();
-                if (ActivityCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, 114514);
-                }
-
-                recording = videoCapture.getOutput().prepareRecording(this, options)
-                        .withAudioEnabled()
-                        .start(ContextCompat.getMainExecutor(this), videoRecordEvent -> {
-                            if(videoRecordEvent instanceof VideoRecordEvent.Finalize){
-                                VideoRecordEvent.Finalize finalizeEvent= (VideoRecordEvent.Finalize) videoRecordEvent;
-                                Log.e("Debug", String.valueOf(finalizeEvent.getError()));
-                                OutputOptions outputOptions=finalizeEvent.getOutputOptions();
-                                if(outputOptions instanceof FileOutputOptions)
-                                    Log.e("Debug",((FileOutputOptions) outputOptions).getFile().getAbsolutePath());
-                            }
-                        });
-
-                fab.setImageResource(android.R.drawable.ic_menu_save);
-
-            } else { // Stop record
-                recording.stop();
-                recording=null;
+            if (cameraController.isRecording()) {
+                cameraController.stopRecord();
                 fab.setImageResource(android.R.drawable.ic_media_play); // start
+            } else {
+                cameraController.startRecord(videoRecordEvent -> {
+                    if (videoRecordEvent instanceof VideoRecordEvent.Finalize) {
+                        VideoRecordEvent.Finalize finalizeEvent = (VideoRecordEvent.Finalize) videoRecordEvent;
+                        OutputResults outputResults = finalizeEvent.getOutputResults();
+                        int errorCode = finalizeEvent.getError();
+                        if (errorCode != VideoRecordEvent.Finalize.ERROR_NONE) {
+                            Toast.makeText(this, "错误: " + errorCode, Toast.LENGTH_LONG).show();
+                        } else {
+                            shareVideo(outputResults.getOutputUri());
+                        }
+                    }
+                });
+                fab.setImageResource(android.R.drawable.ic_menu_save);
             }
         });
         // Instance Camera
-        try{
-            cameraProvider=ProcessCameraProvider.getInstance(this).get();
-            Preview preview=new Preview.Builder().build();
-            previewView=findViewById(R.id.previewView);
-            CameraSelector cameraSelector=new CameraSelector.Builder()
-                    .requireLensFacing(CameraSelector.LENS_FACING_FRONT)
-                    .build();
-            preview.setSurfaceProvider(previewView.getSurfaceProvider());
-
-            QualitySelector qs=QualitySelector.fromOrderedList(
-                    QualitySelector.getSupportedQualities(
-                            cameraSelector.filter(cameraProvider.getAvailableCameraInfos()).get(0)),
-                    FallbackStrategy.higherQualityOrLowerThan(Quality.SD));
-            recorder=new Recorder.Builder()
-                    .setQualitySelector(qs)
-                    .build();
-            videoCapture=VideoCapture.withOutput(recorder);
-            Camera camera=cameraProvider.bindToLifecycle(this,cameraSelector,videoCapture,preview);
-
-        }
-        catch(ExecutionException | InterruptedException e){
-            e.printStackTrace();
-        }
+        cameraController = new CameraController(this);
     }
 
 
@@ -131,17 +70,32 @@ public class MainActivity extends AppCompatActivity {
 
         //noinspection SimplifiableIfStatement
         if (id == R.id.action_preview) {
-            if(isShowingPreview){
-                previewView.setVisibility(View.INVISIBLE);
+            if (isShowingPreview) {
+                cameraController.previewView.setVisibility(View.INVISIBLE);
                 item.setTitle(R.string.action_preview_enabled);
-            } else{
-                previewView.setVisibility(View.VISIBLE);
+            } else {
+                cameraController.previewView.setVisibility(View.VISIBLE);
                 item.setTitle(R.string.action_preview_disabled);
             }
-            isShowingPreview=!isShowingPreview;
+            isShowingPreview = !isShowingPreview;
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
+
+    public void shareVideo(Uri videoUri) {
+        Intent intent = new Intent();
+        intent.setAction(Intent.ACTION_SEND);
+        String[] splitResult = videoUri.getPath().split("\\.");
+        if (splitResult[splitResult.length - 1].equals("3gp")) {
+            intent.setType("video/3gpp");
+        } else {
+            intent.setType("video/mp4");
+        }
+
+        intent.putExtra(Intent.EXTRA_STREAM, videoUri);
+        startActivity(Intent.createChooser(intent, "分享..."));
+    }
+
 }
