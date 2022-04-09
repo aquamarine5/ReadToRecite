@@ -1,8 +1,8 @@
 package com.aquaapps.readtorecite;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.content.ContentValues;
-import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
 import android.provider.MediaStore;
@@ -20,7 +20,6 @@ import androidx.camera.video.Recording;
 import androidx.camera.video.VideoCapture;
 import androidx.camera.video.VideoRecordEvent;
 import androidx.camera.view.PreviewView;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.util.Consumer;
 
@@ -68,10 +67,12 @@ public class CameraController {
         return recording != null;
     }
 
+
+    @SuppressLint("MissingPermission")
     public void startRecord(Consumer<VideoRecordEvent> videoRecordListener) {
         ContentValues values = new ContentValues();
         values.put(MediaStore.MediaColumns.DISPLAY_NAME,
-                "ReadToRecite-" + new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ENGLISH).format(new Date())+".3gp");
+                "ReadToRecite-" + new SimpleDateFormat("yyyyMMdd-HHmmss", Locale.ENGLISH).format(new Date()) + ".3gp");
         Uri videoCollection;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             videoCollection = MediaStore.Video.Media
@@ -84,9 +85,11 @@ public class CameraController {
                 .setContentValues(values)
                 .build();
 
-        if (ActivityCompat.checkSelfPermission(activity, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(activity, new String[]{Manifest.permission.RECORD_AUDIO}, 114514);
-        }
+        PermissionController.requestPermissions(activity, new String[]{
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.CAMERA
+        });
 
         recording = videoCapture.getOutput()
                 .prepareRecording(activity, options)
