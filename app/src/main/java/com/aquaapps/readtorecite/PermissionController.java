@@ -20,7 +20,7 @@ public class PermissionController {
         }
     }
     public static void requestPermission(AppCompatActivity activity,String permission){
-        if(ActivityCompat.checkSelfPermission(activity,permission)== PackageManager.PERMISSION_DENIED &&
+        if(ActivityCompat.checkSelfPermission(activity,permission) == PackageManager.PERMISSION_DENIED &&
             ActivityCompat.shouldShowRequestPermissionRationale(activity,permission)){
             ActivityCompat.requestPermissions(activity,new String[]{permission},114514);
         }

@@ -3,8 +3,10 @@ package com.aquaapps.readtorecite;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
@@ -15,11 +17,13 @@ import androidx.camera.video.OutputResults;
 import androidx.camera.video.VideoRecordEvent;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.android.material.textfield.TextInputEditText;
 
 import java.util.Arrays;
 
 public class MainActivity extends AppCompatActivity {
     public CameraController cameraController;
+    public TextInputEditText textInputEditText;
 
     public boolean isShowingPreview = true;
 
@@ -30,6 +34,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         FloatingActionButton fab = findViewById(R.id.fab);
+        textInputEditText=findViewById(R.id.input_text);
         fab.setOnClickListener(view -> {
             if (cameraController.isRecording()) {
                 cameraController.stopRecord();
@@ -91,6 +96,20 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch (keyCode){
+            case KeyEvent.KEYCODE_VOLUME_UP:
+                textInputEditText.scrollBy(0,-800);
+                return true;
+            case KeyEvent.KEYCODE_VOLUME_DOWN:
+                textInputEditText.scrollBy(0,800);
+                return true;
+            default:
+                return super.onKeyDown(keyCode, event);
+        }
+    }
+
     public void shareVideo(Uri videoUri) {
         Intent intent = new Intent();
         intent.setAction(Intent.ACTION_SEND);
@@ -102,7 +121,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
         intent.putExtra(Intent.EXTRA_STREAM, videoUri);
-        startActivity(Intent.createChooser(intent, "分享..."));
+        startActivity(Intent.createChooser(intent, "分享背诵视频"));
     }
 
 }
