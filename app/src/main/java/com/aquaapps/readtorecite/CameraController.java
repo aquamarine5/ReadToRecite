@@ -40,6 +40,13 @@ public class CameraController {
     public CameraController(AppCompatActivity activity) {
         this.activity = activity;
         try {
+
+            PermissionController.requestPermissions(activity, new String[]{
+                    Manifest.permission.RECORD_AUDIO,
+                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                    Manifest.permission.CAMERA
+            });
+
             cameraProvider = ProcessCameraProvider.getInstance(activity).get();
             Preview preview = new Preview.Builder().build();
             previewView = activity.findViewById(R.id.previewView);
@@ -84,12 +91,6 @@ public class CameraController {
                 activity.getContentResolver(), videoCollection)
                 .setContentValues(values)
                 .build();
-
-        PermissionController.requestPermissions(activity, new String[]{
-                Manifest.permission.RECORD_AUDIO,
-                Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.CAMERA
-        });
 
         recording = videoCapture.getOutput()
                 .prepareRecording(activity, options)

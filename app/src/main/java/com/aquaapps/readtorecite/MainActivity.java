@@ -3,14 +3,15 @@ package com.aquaapps.readtorecite;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.PersistableBundle;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.camera.video.OutputResults;
@@ -19,13 +20,11 @@ import androidx.camera.video.VideoRecordEvent;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.google.android.material.textfield.TextInputEditText;
 
-import java.util.Arrays;
-
 public class MainActivity extends AppCompatActivity {
     public CameraController cameraController;
     public TextInputEditText textInputEditText;
 
-    public boolean isShowingPreview = true;
+    private boolean isShowingPreview = true;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,7 +33,7 @@ public class MainActivity extends AppCompatActivity {
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         FloatingActionButton fab = findViewById(R.id.fab);
-        textInputEditText=findViewById(R.id.input_text);
+        Initialize();
         fab.setOnClickListener(view -> {
             if (cameraController.isRecording()) {
                 cameraController.stopRecord();
@@ -55,10 +54,14 @@ public class MainActivity extends AppCompatActivity {
                 fab.setImageResource(android.R.drawable.ic_menu_save);
             }
         });
-        // Instance Camera
-        cameraController = new CameraController(this);
     }
 
+    @Override
+    public void onStop() {
+        super.onStop();
+
+        Properties.save();
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -69,7 +72,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        PermissionController.onRequestPermissionsResult(requestCode,permissions,grantResults);
+        PermissionController.onRequestPermissionsResult(requestCode, permissions, grantResults);
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
     }
 
@@ -98,16 +101,45 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
-        switch (keyCode){
+        switch (keyCode) {
             case KeyEvent.KEYCODE_VOLUME_UP:
-                textInputEditText.scrollBy(0,-800);
+                int y = textInputEditText.getScrollY();
+                int scroll_y = Properties.readInt(PropertiesKeys.SCROLL_DISTANCE);
+                if (y < scroll_y) textInputEditText.scrollBy(0, -y);
+                else textInputEditText.scrollBy(0, -scroll_y);
                 return true;
             case KeyEvent.KEYCODE_VOLUME_DOWN:
-                textInputEditText.scrollBy(0,800);
+                textInputEditText.scrollBy(0, Properties.readInt(PropertiesKeys.SCROLL_DISTANCE));
                 return true;
             default:
                 return super.onKeyDown(keyCode, event);
         }
+    }
+
+    @Override
+    public void onSaveInstanceState(@NonNull Bundle outState, @NonNull PersistableBundle outPersistentState) {
+        outState.putCharSequence(PropertiesKeys.LAST_RECITE_CONTENT, textInputEditText.getText());
+        outState.putInt(PropertiesKeys.SCROLL_POSITION, textInputEditText.getScrollY());
+
+        super.onSaveInstanceState(outState, outPersistentState);
+    }
+
+    @Override
+    public void onRestoreInstanceState(@Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
+        super.onRestoreInstanceState(savedInstanceState, persistentState);
+
+        if (savedInstanceState != null) {
+            textInputEditText.setText(savedInstanceState.getCharSequence(PropertiesKeys.LAST_RECITE_CONTENT));
+            textInputEditText.scrollTo(0, savedInstanceState.getInt(PropertiesKeys.SCROLL_POSITION));
+        }
+    }
+
+    public void Initialize() {
+        Properties.initialize(this);
+        textInputEditText = findViewById(R.id.input_text);
+        textInputEditText.setText(Properties.readString(PropertiesKeys.LAST_RECITE_CONTENT));
+        // Instance Camera
+        cameraController = new CameraController(this);
     }
 
     public void shareVideo(Uri videoUri) {
