@@ -40,12 +40,7 @@ public class CameraController {
     public CameraController(AppCompatActivity activity) {
         this.activity = activity;
         try {
-
-            PermissionController.requestPermissions(activity, new String[]{
-                    Manifest.permission.RECORD_AUDIO,
-                    Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                    Manifest.permission.CAMERA
-            });
+            checkPermissions();
 
             cameraProvider = ProcessCameraProvider.getInstance(activity).get();
             Preview preview = new Preview.Builder().build();
@@ -66,10 +61,16 @@ public class CameraController {
             cameraProvider.bindToLifecycle(activity, cameraSelector, videoCapture, preview);
 
         } catch (ExecutionException | InterruptedException e) {
-            e.printStackTrace();
+            ExceptionCatcher.CatchException(e, activity);
         }
     }
-
+    public void checkPermissions(){
+        PermissionController.requestPermissions(activity, new String[]{
+                Manifest.permission.RECORD_AUDIO,
+                Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.CAMERA
+        });
+    }
     public boolean isRecording() {
         return recording != null;
     }

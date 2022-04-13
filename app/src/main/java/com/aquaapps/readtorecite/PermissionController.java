@@ -1,6 +1,7 @@
 package com.aquaapps.readtorecite;
 
 import android.content.pm.PackageManager;
+import android.util.Log;
 
 import androidx.annotation.CheckResult;
 import androidx.annotation.NonNull;
@@ -15,16 +16,17 @@ public class PermissionController {
     }
 
     public static void requestPermissions(AppCompatActivity activity, @NonNull String[] permissions) {
+        ActivityCompat.requestPermissions(activity, permissions, 114514);
         for (String permission :
                 permissions) {
-            requestPermission(activity, permission);
+            //requestPermission(activity, permission);
         }
     }
 
     public static void requestPermission(AppCompatActivity activity, String permission) {
-        if (ActivityCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_DENIED &&
-                ActivityCompat.shouldShowRequestPermissionRationale(activity, permission)) {
+        if (ActivityCompat.checkSelfPermission(activity, permission) == PackageManager.PERMISSION_DENIED) {
             ActivityCompat.requestPermissions(activity, new String[]{permission}, 114514);
+            Log.d("a", "requestPermission: "+permission);
         }
     }
 }

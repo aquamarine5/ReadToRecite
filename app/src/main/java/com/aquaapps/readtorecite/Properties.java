@@ -30,7 +30,7 @@ public class Properties {
                 properties.propertiesContent = Properties.setup();
             }
         } catch (IOException | JSONException e) {
-            ExceptionCatcher.CatchException(e, "Properties.Initialize", activity);
+            ExceptionCatcher.CatchException(e, activity);
         }
     }
 
@@ -38,7 +38,7 @@ public class Properties {
         try {
             return properties.propertiesContent.getString(propertiesKey);
         } catch (JSONException e) {
-            ExceptionCatcher.CatchException(e, "Properties.read", activity);
+            ExceptionCatcher.CatchException(e, activity);
             return null;
         }
     }
@@ -47,7 +47,7 @@ public class Properties {
         try {
             return properties.propertiesContent.getInt(propertiesKey);
         } catch (JSONException e) {
-            ExceptionCatcher.CatchException(e, "Properties.read", activity);
+            ExceptionCatcher.CatchException(e, activity);
             return 0;
         }
     }
@@ -56,7 +56,7 @@ public class Properties {
         try {
             properties.propertiesContent.put(propertiesKey, values);
         } catch (JSONException e) {
-            ExceptionCatcher.CatchException(e, "Properties.write", activity);
+            ExceptionCatcher.CatchException(e, activity);
         }
     }
 
@@ -74,7 +74,7 @@ public class Properties {
         try {
             DataStorage.writeFile(properties.propertiesFile, properties.propertiesContent.toString());
         } catch (IOException e) {
-            ExceptionCatcher.CatchException(e, "Properties.save", activity);
+            ExceptionCatcher.CatchException(e, activity);
         }
     }
 }
