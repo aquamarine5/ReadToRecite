@@ -95,6 +95,8 @@ public class MainActivity extends AppCompatActivity {
             }
             isShowingPreview = !isShowingPreview;
             return true;
+        } else if (id == R.id.clear) {
+            textInputEditText.setText("");
         }
 
         return super.onOptionsItemSelected(item);
@@ -139,7 +141,7 @@ public class MainActivity extends AppCompatActivity {
         Properties.initialize(this);
         textInputEditText = findViewById(R.id.input_text);
         textInputEditText.setText(Properties.readString(PropertiesKeys.LAST_RECITE_CONTENT));
-        Log.d("I",Properties.readString(PropertiesKeys.LAST_RECITE_CONTENT));
+        Log.d("I", Properties.readString(PropertiesKeys.LAST_RECITE_CONTENT));
         // Instance Camera
         cameraController = new CameraController(this);
     }

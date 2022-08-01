@@ -4,4 +4,26 @@
     <string name="action_preview_enabled">显示预览</string>
     <string name="description_record">录制</string>
     <string name="detail_inputbox">在此输入背诵内容</string>
+    <string name="clear_content">清空背诵内容</string>
+    <string name="readme">
+当前版本： v1.0-beta-3<br/>
+兼容Android 5.1版本，兼容不支持分屏的Android系统<br/>
+Author: Github@aquamarine5<br/>
+如何使用？（必读）：<br/>
+    点击右上角的三个点可以切换录制预览和背诵内容<br/>
+    音量+/-可以滚动背诵内容<br/>
+    点击右下悬浮按钮可以录制背诵视频<br/>
+    再次点击按钮结束录制，并调用分享<br/>
+Changelog:<br/>
+  beta-3 新内容：<br/>
+    新增清屏按钮<br/>
+    加入Readme<br/>
+  beta-2 新内容：<br/>
+    通过Properties类和PropertieKeys来设置获取首选项<br/>
+    DataStorage包含了存储相关的方法（getFile，read，write）<br/>
+    通过onSaveInstanceState和onRestoreInstanceState存储背诵位置和背诵内容<br/>
+    ExpectionCatcher捕获一些错误并显示AlertDialog<br/>
+    在onCreate开始就请求权限<br/>
+    对上划进行不小于0的限制<br/>
+    </string>
 </resources>
